@@ -1,27 +1,25 @@
 module.exports = function(app) {
 
-    // una forma de pasar parámetros
-
     app.get("/songs", function(req, res) {
 
-        let response = "";
+        let songs = [{
+            "title": "Blank space",
+            "price": "1.2"
+        }, {
+            "title": "Thriller",
+            "price": "2.3"
+        }, {
+            "title": "Bohemian Rhapsody",
+            "price": "3.4"
+        }];
 
-        if (req.query.title != null && typeof(req.query.title) != "undefined")
-            response = "Título: " + req.query.title + "<br>";
+        let response = {
+            seller: 'Tienda de canciones',
+            songs: songs
+        };
 
-        if (req.query.author != null && typeof(req.query.author) != "undefined")
-            response += "Autor: " + req.query.author;
-
-        res.send(response);
+        res.render("shop.twig", response);
     });
-
-    app.get("/add", function(req, res) {
-        let response = parseInt(req.query.num1) + parseInt(req.query.num2);
-
-        res.send(String(response));
-    });
-
-    // otra forma de pasar parámetros
 
     app.get('/songs/:id', function(req, res) {
         let response = 'id: ' + req.params.id;
@@ -34,17 +32,17 @@ module.exports = function(app) {
         res.send(response);
     });
 
-    // método post
+    app.get('/songs/add', function (req, res) {
+        res.render("add.twig");
+    });
 
     app.post('/songs/add', function(req, res) {
-       let response = "Canción agregada: " + req.body.title + "<br>"
+        let response = "Canción agregada: " + req.body.title + "<br>"
             + "genero: " + req.body.kind + "<br>"
             + "precio: " + req.body.price;
 
-       res.send(response);
+        res.send(response);
     });
-
-    // Patrones
 
     app.get('/promo*', function(req, res) {
        res.send("Respuesta al patrón promo*");
