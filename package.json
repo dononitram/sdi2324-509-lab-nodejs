@@ -1,0 +1,14 @@
+{
+  "name": "music_store",
+  "description": "Tienda de música",
+  "version": "1.0.0",
+  "main": "hello-world-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dononitram/sdi2324-509-lab-nodejs.git"
+  },
+  "private": true
+}
