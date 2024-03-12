@@ -1,19 +1,35 @@
 module.exports = function (app) {
 
+    let roles = ["Cantante", "Trompetista", "Violinista", "Saxofonista", "Pianista", "Guitarrista", "Otro"];
+
+    let authors = [{
+        "name": "Kevin Levrone",
+        "group": "The syringes",
+        "role": "saxofonista"
+    }, {
+        "name": "La Rosalía",
+        "group": "La Rosalía",
+        "role": "cantante"
+    }, {
+        "name": "Alex Turner",
+        "group": "Arctic Monkeys",
+        "role": "cantante"
+    }, {
+        "name": "Slash",
+        "group": "Guns n' Roses",
+        "role": "guitarrista"
+    }, {
+        "name": "Paco de Lucía",
+        "group": "Paco",
+        "role": "guitarrista"
+    }, {
+        "name": "Chris Bumstead",
+        "group": "The syringes",
+        "role": "pianista"
+    }];
+
     app.get("/authors", function (req, res) {
-        let authors = [{
-            "name": "Kevin Levrone",
-            "group": "The syringes",
-            "role": "cantante"
-        }, {
-            "name": "La Rosalía",
-            "group": "La Rosalía",
-            "role": "cantante"
-        }, {
-            "name": "Chris Bumstead",
-            "group": "The syringes",
-            "role": "pianista"
-        }];
+
         let response = {
             seller: "Autores",
             authors: authors
@@ -23,13 +39,22 @@ module.exports = function (app) {
 
     app.get("/authors/add", function (req, res) {
 
-        let roles = ["Cantante", "Trompetista", "Violinista", "Saxofonista", "Pianista"]
-
         let response = {
             roles: roles
         }
 
         res.render("authors/add.twig", response);
+    });
+
+    app.get("/authors/filter/:role", function (req, res) {
+
+        let response = {
+            seller: "Autores",
+            authors: authors.filter(author => author.role.toUpperCase() === req.params.role.toUpperCase())
+        }
+
+        res.render("authors/authors.twig", response);
+
     });
 
     app.post("/authors/add", function (req, res) {
