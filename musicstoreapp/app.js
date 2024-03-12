@@ -18,6 +18,7 @@ let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/users');
 
 require("./routes/songs.js")(app);
+require("./routes/authors.js")(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
