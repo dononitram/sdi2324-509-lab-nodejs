@@ -1,8 +1,8 @@
 const {ObjectId} = require('mongodb');
 
-module.exports = function(app, songsRepository) {
+module.exports = function (app, songsRepository) {
 
-    app.get('/shop', function(req, res) {
+    app.get('/shop', function (req, res) {
 
         let filter = {};
         let options = {sort: {title:1}};
@@ -12,25 +12,39 @@ module.exports = function(app, songsRepository) {
         }
 
         songsRepository.getSongs(filter,options).then(songs => {
+            console.log(songs)
             res.render("shop.twig", {songs: songs})
         }).catch(error => {
             res.send("Se ha producido un error al listar las canciones " + error)
         });
 
-    });
+    })
 
     app.get('/songs/add', function (req, res) {
-        res.render("songs/add.twig");
-    });
 
-    app.post('/songs/add', function(req, res) {
+        if ( req.session.user == null) {
+            res.redirect("/shop");
+            return;
+        }
+
+        res.render("songs/add.twig");
+    })
+
+    app.post('/songs/add', function (req, res) {
+
+        if ( req.session.user == null) {
+            res.redirect("/shop");
+            return;
+        }
+
         let song = {
             title: req.body.title,
             kind: req.body.kind,
-            price: req.body.price
+            price: req.body.price,
+            author: req.session.user
         };
 
-        songsRepository.insertSong(song, function(result) {
+        songsRepository.insertSong(song, function (result) {
 
             if (result.songId !== null && result.songId !== undefined) {
 
@@ -62,9 +76,9 @@ module.exports = function(app, songsRepository) {
                 res.send("Error al insertar canción: " + result.error);
             }
         });
-    });
+    })
 
-    app.get('/songs/:id', function(req, res) {
+    app.get('/songs/:id', function (req, res) {
 
         let filter = {_id:  new ObjectId(req.params.id)};
         let options = {};
@@ -75,20 +89,20 @@ module.exports = function(app, songsRepository) {
            res.send("Se ha producido un error al buscar la canción: " + error);
         });
 
-    });
+    })
 
-    app.get('/songs/:kind/:id', function(req, res) {
+    app.get('/songs/:kind/:id', function (req, res) {
         let response = 'id: ' + req.params.id + '<br>'
             + 'Tipo de música: ' + req.params.kind;
         res.send(response);
-    });
+    })
 
-    app.get('/promo*', function(req, res) {
+    app.get('/promo*', function (req, res) {
        res.send("Respuesta al patrón promo*");
-    });
+    })
 
-    app.get('/pro*ar', function(req, res) {
+    app.get('/pro*ar', function (req, res) {
        res.send("Respuesta al patrón pro*ar");
-    });
+    })
 
 };

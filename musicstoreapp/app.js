@@ -5,6 +5,14 @@ let cookieParser = require('cookie-parser');
 let logger = require('morgan');
 
 let app = express();
+let crypto = require('crypto');
+
+let expressSession = require('express-session');
+app.use(expressSession({
+  secret: 'abcdefg',
+  resave: true,
+  saveUninitialized: true
+}));
 
 let fileUpload = require('express-fileupload');
 app.use(fileUpload({
@@ -13,6 +21,8 @@ app.use(fileUpload({
 }));
 
 app.set('uploadPath', __dirname)
+app.set('clave', 'abcdefg');
+app.set('crypto', crypto);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,19 +32,23 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-let indexRouter = require('./routes/index');
-let usersRouter = require('./routes/users');
+// Routers
 
-// MongoDB
+let indexRouter = require('./routes/index');
+
+// DB & Repositories
 const { MongoClient } = require("mongodb");
 const connectionStrings = 'mongodb+srv://admin:sdi@musicstoreapp.4ovvbr4.mongodb.net/?retryWrites=true&w=majority&appName=musicstoreapp'
 const dbClient = new MongoClient(connectionStrings);
 
-// Repositories
-let songsRepository = require("./repositories/songsRepository.js");
+const usersRepository = require("./repositories/usersRepository.js");
+usersRepository.init(app, dbClient);
+
+const songsRepository = require("./repositories/songsRepository.js");
 songsRepository.init(app, dbClient);
 
 // Routes
+require("./routes/users.js")(app, usersRepository);
 require("./routes/songs.js")(app, songsRepository);
 require("./routes/authors.js")(app);
 
@@ -49,7 +63,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
