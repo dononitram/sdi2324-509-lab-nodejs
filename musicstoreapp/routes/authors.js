@@ -40,21 +40,11 @@ module.exports = function (app) {
     app.get("/authors/add", function (req, res) {
 
         let response = {
+            default: roles[4],
             roles: roles
         }
 
         res.render("authors/add.twig", response);
-    });
-
-    app.get("/authors/filter/:role", function (req, res) {
-
-        let response = {
-            seller: "Autores",
-            authors: authors.filter(author => author.role.toUpperCase() === req.params.role.toUpperCase())
-        }
-
-        res.render("authors/authors.twig", response);
-
     });
 
     app.post("/authors/add", function (req, res) {
@@ -75,6 +65,17 @@ module.exports = function (app) {
             response += "role no enviado en la petición" + "<br>";
         }
         res.send(response);
+    });
+
+    app.get("/authors/filter/:role", function (req, res) {
+
+        let response = {
+            seller: "Autores",
+            authors: authors.filter(author => author.role.toUpperCase() === req.params.role.toUpperCase())
+        }
+
+        res.render("authors/authors.twig", response);
+
     });
 
     app.get("/author*", function (req, res) {
