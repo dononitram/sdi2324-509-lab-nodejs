@@ -6,6 +6,14 @@ let logger = require('morgan');
 
 let app = express();
 
+let fileUpload = require('express-fileupload');
+app.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 },
+  createParentPath: true
+}));
+
+app.set('uploadPath', __dirname)
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'twig');
