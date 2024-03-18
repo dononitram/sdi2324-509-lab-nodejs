@@ -7,14 +7,14 @@ let logger = require('morgan');
 let app = express();
 let crypto = require('crypto');
 
-let expressSession = require('express-session');
+const expressSession = require('express-session');
 app.use(expressSession({
   secret: 'abcdefg',
   resave: true,
   saveUninitialized: true
 }));
 
-let fileUpload = require('express-fileupload');
+const fileUpload = require('express-fileupload');
 app.use(fileUpload({
   limits: { fileSize: 50 * 1024 * 1024 },
   createParentPath: true
@@ -34,7 +34,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routers
 
-let indexRouter = require('./routes/index');
+const indexRouter = require('./routes/index');
+
+const userSessionRouter = require('./routes/userSessionRouter');
+app.use("/songs/add",userSessionRouter);
+app.use("/publications",userSessionRouter);
+app.use("/shop/",userSessionRouter);
+
+const userAudiosRouter = require('./routes/userAudiosRouter');
+app.use("/audios/",userAudiosRouter);
 
 // DB & Repositories
 const { MongoClient } = require("mongodb");
