@@ -37,6 +37,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const indexRouter = require('./routes/index');
 
 const userSessionRouter = require('./routes/userSessionRouter');
+app.use("/songs/favorites/add",userSessionRouter);
+app.use("/songs/favorites",userSessionRouter);
 app.use("/songs/add",userSessionRouter);
 app.use("/publications",userSessionRouter);
 app.use("/shop/",userSessionRouter);
@@ -52,11 +54,15 @@ const dbClient = new MongoClient(connectionStrings);
 const usersRepository = require("./repositories/usersRepository.js");
 usersRepository.init(app, dbClient);
 
+const favouritesRepository = require("./repositories/favoriteSongsRepository.js");
+favouritesRepository.init(app, dbClient);
+
 const songsRepository = require("./repositories/songsRepository.js");
 songsRepository.init(app, dbClient);
 
 // Routes
 require("./routes/users.js")(app, usersRepository);
+require("./routes/songs/favorites.js")(app, favouritesRepository, songsRepository);
 require("./routes/songs.js")(app, songsRepository);
 require("./routes/authors.js")(app);
 
