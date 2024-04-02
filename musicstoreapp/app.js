@@ -43,6 +43,10 @@ app.use("/songs/add",userSessionRouter);
 app.use("/publications",userSessionRouter);
 app.use("/shop/",userSessionRouter);
 
+const userAuthorRouter = require('./routes/userAuthorRouter');
+app.use("/songs/edit",userAuthorRouter);
+app.use("/songs/delete",userAuthorRouter);
+
 const userAudiosRouter = require('./routes/userAudiosRouter');
 app.use("/audios/",userAudiosRouter);
 
