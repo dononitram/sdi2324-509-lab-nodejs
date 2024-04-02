@@ -13,8 +13,9 @@
         <h2>{{ song.title }}</h2>
         <p>{{ song.author.email }}</p>
         <p>{{ song.kind }}</p>
-        <button type="button" class="btn btn-primary pull-right">{{ song.price }} €</button>
-        <!-- Cambiar por reproducir si ya está comprada -->
+        <form class="form-horizontal" method="post" action="/songs/buy/{{ song._id }}">
+          <button type="submit" class="btn btn-primary">Comprar: {{ song.price }}€</button>
+        </form>
       </div>
     </div>
   </div>
