@@ -54,7 +54,7 @@ app.use("/audios/",userAudiosRouter);
 
 // DB & Repositories
 const { MongoClient } = require("mongodb");
-const connectionStrings = 'mongodb+srv://admin:sdi@musicstoreapp.4ovvbr4.mongodb.net/?retryWrites=true&w=majority&appName=musicstoreapp'
+const connectionStrings = 'mongodb://localhost:27017/musicstoreapp'
 const dbClient = new MongoClient(connectionStrings);
 
 const usersRepository = require("./repositories/usersRepository.js");
