@@ -145,7 +145,27 @@ module.exports = function (app, songsRepository) {
         let options = {};
 
         songsRepository.findSong(filter, options).then(song => {
-            res.render("songs/song.twig", {song:song});
+
+            let purchased = false;
+
+            if (JSON.stringify(req.session.user) === JSON.stringify(song.author)) {
+                purchased = true;
+            }
+            
+            let filterPurchases = {
+                user: req.session.user,
+                song_id: new ObjectId(req.params.id)
+            }
+            songsRepository.getPurchases(filterPurchases, {}).then(purchases => {
+
+                if (purchases.length !== 0) {
+                    purchased = true;
+                }
+
+                res.render("songs/song.twig", {song: song, purchased: purchased});
+            }).catch(error => {
+                res.send("Se ha producido un error al buscar la canción: " + error);
+            });
         }).catch(error => {
            res.send("Se ha producido un error al buscar la canción: " + error);
         });
@@ -158,15 +178,39 @@ module.exports = function (app, songsRepository) {
             user: req.session.user,
             song_id: songId
         }
-        songsRepository.buySong(shop).then(result => {
-            if (result.insertedId === null || typeof (result.insertedId) === undefined) {
-                res.send("Se ha producido un error al comprar la canción")
-            } else {
-                res.redirect("/purchases");
+
+        let purchased = false;
+
+        if (JSON.stringify(req.session.user) === JSON.stringify(song.author)) {
+            purchased = true;
+        }
+
+        let filterPurchases = {
+            user: req.session.user,
+            song_id: new ObjectId(req.params.id)
+        }
+        songsRepository.getPurchases(filterPurchases, {}).then(purchases => {
+
+            if (purchases.length === 0) {
+                songsRepository.buySong(shop).then(result => {
+                    if (result == null) {
+                        res.redirect("/shop?message=No se ha podido comprar la canción&messageType=alert-error");
+                    } else {
+                        res.redirect("/purchases");
+                    }
+                }).catch(error => {
+                    res.redirect("/shop?message=No se ha podido comprar la canción&messageType=alert-error");
+                });
             }
+
+            else {
+                res.redirect("/shop?message=Esta canción ya te pertenece&messageType=alert-error");
+            }
+
         }).catch(error => {
-            res.send("Se ha producido un error al comprar la canción " + error)
-        })
+            res.redirect("/shop?message=No se ha podido comprar la canción&messageType=alert-error");
+        });
+
     })
 
     app.get('/purchases', function (req, res) {

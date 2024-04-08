@@ -10,7 +10,7 @@ userAuthorRouter.use(function (req, res, next) {
     let songId = path.basename(req.originalUrl);
     let filter = {_id: new ObjectId(songId)};
     songsRepository.findSong(filter, {}).then(song => {
-        if (JSON.stringify(req.session.user)== JSON.stringify(song.author)) {
+        if (JSON.stringify(req.session.user) === JSON.stringify(song.author)) {
             next();
         } else {
             res.redirect("/shop");
