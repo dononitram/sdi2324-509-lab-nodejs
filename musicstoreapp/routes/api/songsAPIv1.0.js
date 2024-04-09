@@ -17,10 +17,40 @@ module.exports = function (app, songsRepository, usersRepository) {
             let song = {
                 title: req.body.title,
                 kind: req.body.kind,
-                price: req.body.price,
+                price: parseFloat(req.body.price),
                 author: req.session.user
             }
-            // Validar aquí:  título, género, precio y autor.
+
+            console.log(song);
+
+            if (song.title === null || song.title === undefined || song.title.length > 40 || song.title.length < 4) {
+                res.status(409);
+                res.json({error: "El título es inválido"});
+                console.log("El título es inválido");
+                return;
+            }
+
+            if (song.kind === null || song.kind === undefined || song.kind.length < 4) {
+                res.status(409);
+                res.json({error: "El género es inválido"});
+                console.log("El género es inválido");
+                return;
+            }
+
+            if (song.price === null || song.price === undefined || song.price < 0) {
+                res.status(409);
+                res.json({error: "El precio es inválido"});
+                console.log("El precio es inválido");
+                return;
+            }
+
+            if (song.author === null || song.author === undefined) {
+                res.status(409);
+                res.json({error: "Debe autenticarse para realizar esta petición"});
+                console.log("Debe autenticarse para realizar esta petición");
+                return;
+            }
+
             songsRepository.insertSong(song, function (songId) {
                 if (songId === null) {
                     res.status(409);
@@ -88,37 +118,58 @@ module.exports = function (app, songsRepository, usersRepository) {
         try {
             let songId = new ObjectId(req.params.id);
             let filter = {_id: songId};
-            //Si la _id NO no existe, no crea un nuevo documento.
-            const options = {upsert: false};
-            let song = {
-                author: req.session.user
-            }
-            if (typeof req.body.title !== "undefined" && req.body.title !== null)
-                song.title = req.body.title;
-            if (typeof req.body.kind !== "undefined" &&  req.body.kind !== null)
-                song.kind = req.body.kind;
-            if (typeof req.body.price !== "undefined" &&  req.body.price !== null)
-                song.price = req.body.price;
-            songsRepository.updateSong(song, filter, options).then(result => {
-                if (result === null) {
+
+            songsRepository.findSong(filter, {}).then(song => {
+                if (song === null) {
                     res.status(404);
-                    res.json({error: "ID inválido o no existe, no se ha actualizado la canción."});
+                    res.json({error: "ID inválido o no existe"});
+                    return;
                 }
-                //La _id No existe o los datos enviados no difieren de los ya almacenados.
-                else if (result.modifiedCount == 0) {
-                    res.status(409);
-                    res.json({error: "No se ha modificado ninguna canción."});
+
+                console.log(req.session.user);
+                console.log(song.author);
+                if (JSON.stringify(song.author) !== JSON.stringify(req.session.user)) {
+                    res.status(403);
+                    res.json({error: "No tiene permiso para modificar esta canción"});
+                    return;
                 }
-                else{
-                    res.status(200);
-                    res.json({
-                        message: "Canción modificada correctamente.",
-                        result: result
-                    })
+
+                // Continue with the update if the author matches the logged in user
+                const options = {upsert: false};
+                let updatedSong = {
+                    author: req.session.user
                 }
+                if (typeof req.body.title !== "undefined" && req.body.title !== null)
+                    updatedSong.title = req.body.title;
+                if (typeof req.body.kind !== "undefined" &&  req.body.kind !== null)
+                    updatedSong.kind = req.body.kind;
+                if (typeof req.body.price !== "undefined" &&  req.body.price !== null)
+                    updatedSong.price = req.body.price;
+
+                songsRepository.updateSong(updatedSong, filter, options).then(result => {
+                    if (result === null) {
+                        res.status(404);
+                        res.json({error: "ID inválido o no existe, no se ha actualizado la canción."});
+                    }
+                    //La _id No existe o los datos enviados no difieren de los ya almacenados.
+                    else if (result.modifiedCount == 0) {
+                        res.status(409);
+                        res.json({error: "No se ha modificado ninguna canción."});
+                    }
+                    else{
+                        res.status(200);
+                        res.json({
+                            message: "Canción modificada correctamente.",
+                            result: result
+                        })
+                    }
+                }).catch(error => {
+                    res.status(500);
+                    res.json({error : "Se ha producido un error al modificar la canción."})
+                });
             }).catch(error => {
                 res.status(500);
-                res.json({error : "Se ha producido un error al modificar la canción."})
+                res.json({error: "Se ha producido un error al intentar modificar la canción: "+ error})
             });
         } catch (e) {
             res.status(500);
@@ -150,6 +201,14 @@ module.exports = function (app, songsRepository, usersRepository) {
                     let token = app.get('jwt').sign(
                         {user: user.email, time: Date.now() / 1000}, "secreto"
                     );
+
+                    const jwt = require('jsonwebtoken');
+                    try {
+                        let decoded = jwt.verify(token, 'secreto'); // replace 'secreto' with your secret key
+                        req.session.user = decoded.user;
+                    } catch (err) {
+                        res.status(401).json({ error: 'Invalid token' });
+                    }
 
                     res.status(200);
                     res.json({

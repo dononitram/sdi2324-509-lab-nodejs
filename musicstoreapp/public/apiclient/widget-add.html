@@ -24,6 +24,9 @@
         <button type="button" class="btn btn-primary" id="boton-add"
                 onclick="widgetAddSong()">Nueva canción</button>
     </div>
+    <div style="color: red">
+        <p id="error"></p>
+    </div>
 </div>
 
 <script>
@@ -44,7 +47,8 @@
 
             },
             error: function (error) {
-                $("#main-container").load("widget-login.html");
+                //$("#main-container").load("widget-login.html");
+                $("#error").html('error: ' + error.responseJSON.error);
             }
         });
     }
